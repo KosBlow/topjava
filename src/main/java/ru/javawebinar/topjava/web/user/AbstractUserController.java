@@ -9,6 +9,7 @@ import ru.javawebinar.topjava.model.User;
 import ru.javawebinar.topjava.service.UserService;
 import ru.javawebinar.topjava.to.UserTo;
 import ru.javawebinar.topjava.util.UserUtil;
+import ru.javawebinar.topjava.util.exception.ModificationRestrictionException;
 
 import java.util.List;
 
@@ -52,18 +53,21 @@ public abstract class AbstractUserController {
 
     public void delete(int id) {
         log.info("delete {}", id);
+        checkModificationAllowed(id);
         service.delete(id);
     }
 
     public void update(User user, int id) {
         log.info("update {} with id={}", user, id);
         assureIdConsistent(user, id);
+        checkModificationAllowed(id);
         service.update(user);
     }
 
     public void update(UserTo userTo, int id) {
         log.info("update {} with id={}", userTo, id);
         assureIdConsistent(userTo, id);
+        checkModificationAllowed(id);
         service.update(userTo);
     }
 
@@ -74,6 +78,13 @@ public abstract class AbstractUserController {
 
     public void enable(int id, boolean enabled) {
         log.info(enabled ? "enable {}" : "disable {}", id);
+        checkModificationAllowed(id);
         service.enable(id, enabled);
+    }
+
+    private void checkModificationAllowed(int id) {
+        if (modificationRestriction && id < AbstractBaseEntity.START_SEQ + 2) {
+            throw new ModificationRestrictionException();
+        }
     }
 }
