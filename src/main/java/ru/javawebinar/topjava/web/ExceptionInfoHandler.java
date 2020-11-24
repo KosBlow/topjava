@@ -43,11 +43,10 @@ public class ExceptionInfoHandler {
     @Autowired
     private MessageUtil messageUtil;
 
-    //  http://stackoverflow.com/a/22358422/548473
-    @ResponseStatus(value = HttpStatus.UNPROCESSABLE_ENTITY)
-    @ExceptionHandler(NotFoundException.class)
-    public ErrorInfo handleError(HttpServletRequest req, NotFoundException e) {
-        return logAndGetErrorInfo(req, e, false, DATA_NOT_FOUND);
+    @ExceptionHandler(ApplicationException.class)
+    public ResponseEntity<ErrorInfo> applicationError(HttpServletRequest req, ApplicationException appEx) {
+        ErrorInfo errorInfo = logAndGetErrorInfo(req, appEx, false, appEx.getType(), messageUtil.getMessage(appEx));
+        return ResponseEntity.status(appEx.getType().getStatus()).body(errorInfo);
     }
 
     @ResponseStatus(value = HttpStatus.CONFLICT)  // 409
